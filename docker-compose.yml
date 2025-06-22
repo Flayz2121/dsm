@@ -1,0 +1,46 @@
+services:
+  django:
+    build: ./dsm
+    container_name: django_
+    command: python manage.py runserver 0.0.0.0:8000
+    environment:
+      - DB_HOST=pgdb
+      - DB_NAME=dsm
+      - DB_USER=postgres
+      - DB_PASSWORD=1
+    volumes:
+      - ./dsm:/usr/src/app
+    ports:
+      - 8000:8000
+    depends_on:
+      - pgdb
+    networks:
+      - app-network
+
+  pgdb:
+    image: postgres
+    environment:
+      POSTGRES_DB: dsm
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1
+    ports:
+      - 5433:5432
+    volumes:
+      - pgdbdata:/var/lib/postgresql/data/
+    networks:
+      - app-network
+
+  web:
+    build: ./dsm
+    command: bash -c "python manage.py migrate && gunicorn --bind 0.0.0.0:8000 backend.wsgi:application"
+    ports:
+      - "8001:8000"
+    depends_on:
+      - pgdb
+
+volumes:
+  pgdbdata:
+
+networks:
+  app-network:
+    driver: bridge

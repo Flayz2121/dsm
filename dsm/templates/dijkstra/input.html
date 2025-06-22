@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h2>Алгоритм Дейкстры</h2>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="start">Начальная вершина:</label>
+                <input type="text" class="form-control" name="start"
+                       value="{{ input_start|default:'A' }}" required>
+            </div>
+            <div class="form-group mt-3">
+                <label for="end">Конечная вершина:</label>
+                <input type="text" class="form-control" name="end"
+                       value="{{ input_end|default:'F' }}" required>
+            </div>
+            <div class="form-group mt-3">
+                <label>Матрица смежности (введите веса рёбер, используйте '0' для отсутствия ребра):</label>
+                <div class="mb-3">
+                    <label for="nodes">Вершины (через пробел):</label>
+                    <input type="text" class="form-control" name="nodes"
+                           value="{% if input_nodes %}{{ input_nodes|join:' ' }}{% else %}A B C D E F{% endif %}" required>
+                </div>
+                <div class="matrix-input">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                {% for node in input_nodes %}
+                                <th>{{ node }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in input_nodes %}
+                            <tr>
+                                <th>{{ i }}</th>
+                                {% for j in input_nodes %}
+                                <td>
+                                    <input type="text" class="form-control matrix-cell"
+                                           name="matrix_{{ i }}_{{ j }}"
+                                           value="{% if matrix_data and i in matrix_data and j in matrix_data.i %}{{ matrix_data.i.j }}{% else %}0{% endif %}"
+                                           required>
+                                </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3">Найти кратчайший путь</button>
+        </form>
+    </div>
+</div>
+
+<style>
+    .matrix-cell {
+        width: 60px;
+        text-align: center;
+    }
+    .table-bordered th, .table-bordered td {
+        border: 1px solid #dee2e6;
+        padding: 5px;
+    }
+</style>
+{% endblock %}

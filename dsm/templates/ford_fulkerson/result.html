@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header bg-primary text-white">
+    <h2>Алгоритм Форда-Фалкерсона</h2>
+  </div>
+  <h3>Результат — Максимальный поток</h3>
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-8">
+        <div class="graph-container mb-4">
+          <img src="data:image/png;base64,{{ graphic }}" class="img-fluid" alt="Graph visualization">
+        </div>
+
+        <h4>Интерактивная визуализация</h4>
+        <div id="network" style="height: 500px; border: 1px solid #ddd;"></div>
+      </div>
+
+      <div class="col-md-4">
+        <h4>Максимальный поток: {{ max_flow }}</h4>
+
+        <h5 class="mt-3">Потоки по рёбрам:</h5>
+        <ul class="list-group">
+          {% for edge in edges %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ edge.source }} → {{ edge.destination }}
+            <span class="badge bg-primary rounded-pill">{{ edge.flow }}/{{ edge.capacity }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+
+        <h5 class="mt-3">Матрица максимального потока:</h5>
+        <div class="table-responsive">
+          <table class="table table-bordered text-center">
+            <thead class="table-light">
+              <tr>
+                <th></th>
+                {% for v in vertices %}
+                <th>{{ v }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in flow_matrix %}
+              <tr>
+                <th>{{ row.vertex }}</th>
+                {% for val in row.values %}
+                <td>{{ val }}</td>
+                {% endfor %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <h5 class="mt-3">Минимальный разрез:</h5>
+        <ul class="list-group">
+          {% for edge in min_cut %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ edge.source }} → {{ edge.destination }}
+            <span class="badge bg-warning rounded-pill">Capacity: {{ edge.capacity }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+
+        <div class="mt-4">
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="source" value="{{ input_source }}">
+            <input type="hidden" name="sink" value="{{ input_sink }}">
+            {% for v in input_vertices %}
+            <input type="hidden" name="vertices[]" value="{{ v }}">
+            {% endfor %}
+            {% for row in capacity_data %}
+              {% for val in row.values %}
+              <input type="hidden" name="matrix_{{ row.row_index }}_{{ forloop.counter0 }}" value="{{ val }}">
+              {% endfor %}
+            {% endfor %}
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- vis-network -->
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<script>
+  const nodes = new vis.DataSet([
+    {% for v in vertices %}
+    { id: '{{ v }}', label: '{{ v }}'
+      {% if v == source %}, color: { background: '#4CAF50' }{% endif %}
+      {% if v == sink %}, color: { background: '#F44336' }{% endif %}
+    },
+    {% endfor %}
+  ]);
+
+  const edges = new vis.DataSet([
+    {% for edge in edges %}
+    {
+      from: '{{ edge.source }}',
+      to: '{{ edge.destination }}',
+      label: '{{ edge.flow }}/{{ edge.capacity }}',
+      arrows: 'to',
+      color: {
+        color: '{% if edge.flow > 0 %}#4CAF50{% else %}#cccccc{% endif %}'
+      }
+    },
+    {% endfor %}
+  ]);
+
+  const container = document.getElementById('network');
+  const data = { nodes: nodes, edges: edges };
+  const options = {
+    layout: { improvedLayout: true },
+    physics: {
+      enabled: true,
+      barnesHut: {
+        gravitationalConstant: -8000,
+        centralGravity: 0.3,
+        springLength: 100
+      }
+    },
+    edges: {
+      font: { align: 'top' }
+    },
+    nodes: {
+      shape: 'dot',
+      size: 20,
+      font: { color: '#ffffff' },
+      borderWidth: 2
+    }
+  };
+  const network = new vis.Network(container, data, options);
+</script>
+{% endblock %}

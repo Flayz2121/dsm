@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h2>Алгоритм Краскала</h2>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Введите матрицу смежности (веса рёбер):</label>
+                    <table class="table table-bordered text-center" style="max-width: 600px;">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                {% for v in vertices %}
+                                    <th>{{ v }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for v1 in vertices %}
+                            <tr>
+                                <th>{{ v1 }}</th>
+                                {% for v2 in vertices %}
+                                    {% comment %}
+                                    Получаем индексы текущих вершин через forloop.counter0
+                                    {% endcomment %}
+                                    {% with i=forloop.parentloop.counter0 j=forloop.counter0 %}
+                                        <td>
+                                            {% if j <= i %}
+                                                <input type="number"
+                                                       name="matrix_{{ i }}_{{ j }}"
+                                                       min="0" step="1"
+                                                       value="{% if matrix %}{{ matrix.i.j }}{% else %}0{% endif %}"
+                                                       class="form-control"
+                                                       style="width: 60px;" />
+                                            {% else %}
+                                                <input type="number"
+                                                       readonly
+                                                       class="form-control"
+                                                       style="width: 60px; background: #eee;"
+                                                       value="{% if matrix %}{{ matrix.i.j }}{% else %}0{% endif %}" />
+                                            {% endif %}
+                                        </td>
+                                    {% endwith %}
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Построить дерево</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

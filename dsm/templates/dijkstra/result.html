@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h2>Алгоритм Дейкстры</h2>
+    </div>
+    <h3>Результат - Кратчайший путь от {{ start }} до {{ end }}</h3>
+    <div class="card-body">
+        {% if has_negative_cycle %}
+        <div class="alert alert-danger">
+            Обнаружен отрицательный цикл! Результаты могут быть некорректными.
+        </div>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="graph-container">
+                    <img src="data:image/png;base64,{{ graphic }}" class="img-fluid">
+                </div>
+
+                <div class="mt-4">
+                    <h4>Интерактивная визуализация</h4>
+                    <div id="network"></div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <h4>Кратчайший путь:</h4>
+                <div class="mb-3">
+                    <strong>Длина маршрута:</strong>
+                    {% if path_length == infinity %}
+                    ∞ (путь не существует)
+                    {% else %}
+                    {{ path_length }}
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <strong>Маршрут:</strong>
+                    {% if path %}
+                    {{ path|join:" → " }}
+                    {% else %}
+                    Нет пути
+                    {% endif %}
+                </div>
+
+                <h4>Расстояния от вершины {{ start }}:</h4>
+                <ul class="list-group">
+                    {% for node, distance in distances.items %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ node }}
+                        <span class="badge bg-primary rounded-pill">
+                            {% if distance == infinity %}∞{% else %}{{ distance }}{% endif %}
+                        </span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const container = document.getElementById('network');
+    const nodes = new vis.DataSet([
+        {% for node, distance in distances.items %}
+        {
+            id: '{{ node }}',
+            label: '{{ node }}\n({% if distance == infinity %}∞{% else %}{{ distance }}{% endif %})',
+            color: {
+                background: '{% if node == start %}#4CAF50{% elif node == end %}#FF5722{% elif distance != infinity %}#2196F3{% else %}#cccccc{% endif %}',
+                border: '#1565C0'
+            }
+        },
+        {% endfor %}
+    ]);
+
+    const edges = new vis.DataSet([
+        {% for edge in edges %}
+        {
+            from: '{{ edge.source }}',
+            to: '{{ edge.destination }}',
+            label: '{{ edge.weight }}',
+            color: {
+                color: '{% if edge.is_path_edge %}#FF5722{% else %}#cccccc{% endif %}',
+                highlight: '#FF5722'
+            },
+            width: 1
+        },
+        {% endfor %}
+    ]);
+
+    const data = { nodes, edges };
+    const options = {
+        physics: { stabilization: { enabled: true, iterations: 1000 } },
+        edges: { smooth: false, font: { size: 12 } },
+        nodes: { font: { size: 14, color: '#fff' } }
+    };
+
+    new vis.Network(container, data, options);
+</script>
+{% endblock %}

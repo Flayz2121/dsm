@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header bg-primary text-white">
+    <h2>Алгоритм Форда-Фалкерсона</h2>
+  </div>
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label for="source">Исток (source):</label>
+          <select name="source" class="form-select" required>
+            {% for v in vertices %}
+            <option value="{{ v }}" {% if v == source %}selected{% endif %}>{{ v }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label for="sink">Сток (sink):</label>
+          <select name="sink" class="form-select" required>
+            {% for v in vertices %}
+            <option value="{{ v }}" {% if v == sink %}selected{% endif %}>{{ v }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      {% for v in vertices %}
+        <input type="hidden" name="vertices[]" value="{{ v }}">
+      {% endfor %}
+
+      <label>Матрица пропускных способностей (capacity):</label>
+      <div class="table-responsive">
+        <table class="table table-bordered text-center">
+          <thead class="table-light">
+            <tr>
+              <th></th>
+              {% for v in vertices %}
+              <th>{{ v }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+            <tbody>
+              {% for row in capacity_data %}
+              <tr>
+                <th>{{ row.vertex }}</th>
+                {% for val in row.values %}
+                <td>
+                  <input type="number" min="0" class="form-control"
+                         name="matrix_{{ row.row_index }}_{{ forloop.counter0 }}"
+                         value="{{ val }}">
+                </td>
+                {% endfor %}
+              </tr>
+              {% endfor %}
+            </tbody>
+        </table>
+      </div>
+
+      <button type="submit" class="btn btn-primary mt-3">Вычислить максимальный поток</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

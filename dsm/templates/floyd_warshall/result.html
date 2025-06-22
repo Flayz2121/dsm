@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h2>Алгоритм Флойда-Уоршелла</h2>
+    </div>
+    <h3>Результат - Кратчайшие пути</h3>
+    <div class="card-body">
+        {% if has_negative_cycle %}
+        <div class="alert alert-danger">
+            Обнаружен отрицательный цикл! Некоторые расстояния могут быть некорректными.
+        </div>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="graph-container">
+                    <img src="data:image/png;base64,{{ graphic }}" class="img-fluid">
+                </div>
+
+                <div class="mt-4">
+                    <h4>Интерактивная визуализация</h4>
+                    <div id="network"></div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <h4>Матрица кратчайших расстояний:</h4>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                {% for node in nodes %}
+                                <th>{{ node }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in distance_matrix %}
+                            <tr>
+                                <th>{{ row.node }}</th>
+                                {% for cell in row.distances %}
+                                <td>{{ cell.display }}</td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <h4 class="mt-3">Матрица предшественников:</h4>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                {% for node in nodes %}
+                                <th>{{ node }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in predecessor_matrix %}
+                            <tr>
+                                <th>{{ row.node }}</th>
+                                {% for cell in row.predecessors %}
+                                <td>{{ cell.display }}</td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const container = document.getElementById('network');
+    const nodes = new vis.DataSet([
+        {% for node in nodes %}
+        { id: '{{ node }}', label: '{{ node }}', color: '#2196F3' },
+        {% endfor %}
+    ]);
+
+    const edges = new vis.DataSet([
+        {% for edge in edges %}
+        {
+            from: '{{ edge.source }}',
+            to: '{{ edge.destination }}',
+            label: '{{ edge.weight }}',
+            color: { color: '#cccccc', highlight: '#ff5722' },
+            width: 1,
+            arrows: 'to'
+        },
+        {% endfor %}
+    ]);
+
+    const data = { nodes, edges };
+    const options = {
+        physics: { stabilization: { enabled: true, iterations: 1000 } },
+        edges: { smooth: false, font: { size: 12 } },
+        nodes: { font: { size: 14, color: '#fff' } }
+    };
+
+    new vis.Network(container, data, options);
+</script>
+{% endblock %}
