@@ -1,7 +1,7 @@
 services:
   django:
     build: ./dsm
-    container_name: django_
+    container_name: django_s
     command: python manage.py runserver 0.0.0.0:8000
     environment:
       - DB_HOST=pgdb

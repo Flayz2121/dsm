@@ -72,7 +72,7 @@ DATABASES = {
         'NAME': 'dsm',
         'USER': 'postgres',
         'PASSWORD': '1',
-        'HOST': 'localhost',
+        'HOST': 'pgdb',
         'PORT': '5432',
     }
 }
